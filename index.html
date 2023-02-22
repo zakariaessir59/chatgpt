@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chat GPT</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.3.js"
+        integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM=" crossorigin="anonymous"></script>
+</head>
+
+<style>
+    * {
+        font-family: 'Roboto';
+        font-size: 16px;
+    }
+
+    .container {
+        margin-top: 2rem;
+    }
+
+    #loader {
+        border: 12px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 12px solid #444444;
+        width: 70px;
+        height: 70px;
+        animation: spin 1s linear infinite;
+        visibility: hidden;
+    }
+
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .center {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: auto;
+    }
+</style>
+
+<body class="container-fluid">
+    <div id="loader" class="center"></div>
+    <h2 style="color: rgb(9, 2, 76);text-align: center;font-weight: bolder;">
+        CHAT GPT APPLICATION
+    </h2>
+
+    <div class="row m-2">
+
+        <div class="col-md-6">
+            <form>
+                <br>
+                Quel est le sujet de votre texte ?
+                <br>
+                <input type="text" class="form-control" name="subject" id="subject"
+                    placeholder="Veuillez préciser le sujet du texte à générer">
+                <br>
+                Quelle est la structure de votre texte ?
+                <br>
+                <p>
+                    <input type="checkbox" value="Introduction" id="check1">
+                    <label>Introduction</label>
+                    <br>
+                    <input type="checkbox" value="Sommaire" id="check2">
+                    <label>Sommaire</label>
+                    <br>
+                    <input type="checkbox" value="Partie 1" id="check3">
+                    <label>Partie 1</label>
+                    <br>
+                    <input type="checkbox" value="Partie 2" id="check4">
+                    <label>Partie 2</label>
+                    <br>
+                    <input type="checkbox" value="Partie 3" id="check5">
+                    <label>Partie 3</label>
+                    <br>
+                    <input type="checkbox" value="Conclusion" id="check6">
+                    <label>Conclusion</label>
+                    <br>
+                    <input type="checkbox" value="Conclusion" id="check7">
+                    <label>Je laisse l'IA choisir</label>
+
+                </p>
+                <br>
+                Quelle est la LONGUEUR du texte ?
+                <br>
+                <input type="number" class="form-control" name="length" id="length"
+                    placeholder="Veuillez choisir un nombre de caractères ou de mots">
+                <br>
+                Veuillez ajouter vos consignes particulières pour la rédaction de ce texte
+                <br>
+                <input type="text" class="form-control" name="extra" id="extra"
+                    placeholder="Par exemple : ajouter les sources, citer des auteurs, ajouter des chiffres...">
+                <br><br>
+                <button id="submit-btn" class="btn btn-primary" type="button" name="generate"
+                    onclick="text()">Submit</button>
+                <br><br>
+            </form>
+        </div>
+
+        <div class="col-md-6">
+            <h5 style="text-align: center;">Output</h5>
+            <div class="container-textarea">
+
+                <textarea class="form-control rounded-0" rows="22" id="output">
+
+        </textarea>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script>
+
+        var key = '';
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "key.txt", true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                key = xhr.responseText;
+            }
+        };
+        xhr.send();
+
+        function text() {
+
+            var url = "https://api.openai.com/v1/completions";
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", url);
+
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader(
+                "Authorization",
+                `Bearer ${key}`
+            );
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    document.querySelector(
+                        "#loader").style.visibility = "hidden";
+                    console.log(xhr.status);
+                    console.log(xhr.responseText);
+                    let response = xhr.responseText;
+
+                    response = JSON.parse(response);
+                    console.log(response);
+
+                    var i = 0;
+                    var txt = response["choices"][0]["text"];
+                    var speed = 10;
+
+                    function typeWriter() {
+                        if (i < txt.length) {
+                            document.getElementById("output").innerHTML += txt.charAt(i);
+                            i++;
+                            setTimeout(typeWriter, speed);
+                        }
+                    }
+                    typeWriter()
+                    // document.getElementById("output").innerHTML =
+                    //     response["choices"][0]["text"];
+                }
+
+            }
+
+
+            var subject = document.getElementById("subject").value;
+
+            var check1 = document.getElementById("check1").value;
+            check1 != "" ? check1 : '';
+            var check2 = document.getElementById("check2").value;
+            check2 != "" ? check2 : '';
+            var check3 = document.getElementById("check3").value;
+            check3 != "" ? check3 : '';
+            var check4 = document.getElementById("check4").value;
+            check4 != "" ? check4 : '';
+            var check5 = document.getElementById("check5").value;
+            check5 != "" ? check5 : '';
+            var check6 = document.getElementById("check6").value;
+            check6 != "" ? check6 : '';
+            var check7 = document.getElementById("check7").value;
+            check7 != "" ? check7 : '';
+
+            var length = document.getElementById("length").value;
+            var extra = document.getElementById("extra").value;
+
+            prompt = `
+            Generate content for below provided text in french language/n
+            La longueur du texte doit être ${length} mots \n
+            Le sujet du texte est ${subject} \n
+            La structure du texte est \n
+            ${check1}\n
+            ${check2}\n
+            ${check3}\n
+            ${check4}\n
+            ${check5}\n
+            ${check6}\n
+            ${check7}\n        
+            Incluez également ces informations supplémentaires ${extra}
+            `
+
+            prompt = JSON.parse(JSON.stringify(prompt));
+
+            var data = {
+                model: "text-davinci-003",
+                prompt: prompt,
+                temperature: 0.7,
+                max_tokens: 2048,
+                top_p: 1,
+                frequency_penalty: 0,
+                presence_penalty: 0,
+            };
+
+            data = JSON.stringify(data);
+
+            xhr.send(data);
+
+            document.querySelector(
+                "#loader").style.visibility = "visible";
+
+        };
+
+        var input = document.getElementById("extra");
+
+        // Execute a function when the user presses a key on the keyboard
+        input.addEventListener("keypress", function (event) {
+            // If the user presses the "Enter" key on the keyboard
+            if (event.key === "Enter") {
+                // Cancel the default action, if needed
+                event.preventDefault();
+                // Trigger the button element with a click
+                document.getElementById("submit-btn").click();
+            }
+        });
+    </script>
+</body>
+
+</html>
